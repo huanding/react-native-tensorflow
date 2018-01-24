@@ -1,23 +1,55 @@
 {
-  "name": "react-native-tensorflow",
-  "version": "0.1.1",
-  "description": "A TensorFlow inference library for react native",
-  "main": "index.js",
-  "author": "reweber",
-  "license": "Apache 2.0",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/reneweb/react-native-tensorflow"
+  "_from": "react-native-tensorflow",
+  "_id": "react-native-tensorflow@0.1.1",
+  "_inBundle": false,
+  "_integrity": "sha512-V1kboDRlHwHZgMgNC2J3O0L5/X0j0xj1qwgeirqhzI1kzeUUVSXrUkEffNcJ3fDTBXxzn4GystKQiKmWZIYewA==",
+  "_location": "/react-native-tensorflow",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "tag",
+    "registry": true,
+    "raw": "react-native-tensorflow",
+    "name": "react-native-tensorflow",
+    "escapedName": "react-native-tensorflow",
+    "rawSpec": "",
+    "saveSpec": null,
+    "fetchSpec": "latest"
   },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/react-native-tensorflow/-/react-native-tensorflow-0.1.1.tgz",
+  "_shasum": "ddb9a2d97817e88f5652092a112690d97675cc3e",
+  "_spec": "react-native-tensorflow",
+  "_where": "/Users/xiaowuzhang/dev/smartstore/SmartScanner",
+  "author": {
+    "name": "reweber"
+  },
+  "bugs": {
+    "url": "https://github.com/reneweb/react-native-tensorflow/issues"
+  },
+  "bundleDependencies": false,
+  "dependencies": {
+    "uuid": "3.2.1"
+  },
+  "deprecated": false,
+  "description": "A TensorFlow inference library for react native",
+  "homepage": "https://github.com/reneweb/react-native-tensorflow#readme",
   "keywords": [
     "react-native",
     "tensorflow",
     "mobile"
   ],
+  "license": "Apache 2.0",
+  "main": "index.js",
+  "name": "react-native-tensorflow",
   "peerDependencies": {
     "react-native": ">=0.48.3"
   },
-  "dependencies": {
-    "uuid": "^3.1.0"
-  }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reneweb/react-native-tensorflow.git"
+  },
+  "version": "0.1.1"
 }

@@ -186,10 +186,21 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../../smartstore/SmartScanner/node_modules/react-native/React/**",
+					"$(SRCROOT)/../../tensorflow",
+					"$(SRCROOT)/../../tensorflow/tensorflow/contrib/makefile/downloads/eigen",
+					"$(SRCROOT)/../../tensorflow/tensorflow/contrib/makefile/gen/proto/",
+					"$(SRCROOT)/../../tensorflow/tensorflow/contrib/makefile/downloads/protobuf/src/",
+					"$(SRCROOT)/../../tensorflow/tensorflow/contrib/makefile/downloads/nsync/public",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = "";
 				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "";
 			};
 			name = Debug;
 		};
@@ -223,9 +234,20 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/../../smartstore/SmartScanner/node_modules/react-native/React/**",
+					"$(SRCROOT)/../../tensorflow",
+					"$(SRCROOT)/../../tensorflow/tensorflow/contrib/makefile/downloads/eigen",
+					"$(SRCROOT)/../../tensorflow/tensorflow/contrib/makefile/gen/proto/",
+					"$(SRCROOT)/../../tensorflow/tensorflow/contrib/makefile/downloads/protobuf/src/",
+					"$(SRCROOT)/../../tensorflow/tensorflow/contrib/makefile/downloads/nsync/public",
+				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_LDFLAGS = "";
 				SDKROOT = iphoneos;
+				USER_HEADER_SEARCH_PATHS = "";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -241,11 +263,17 @@
 					"$(SRCROOT)/../../../ios/Pods/TensorFlow-experimental/Frameworks/tensorflow_experimental.framework/Headers",
 					"$(SRCROOT)/../../../ios/Pods/Headers/Public/TensorFlow-experimental/tensorflow_experimental/third_party/eigen3",
 					"$(SRCROOT)/../../../ios/Pods/TensorFlow-experimental/Frameworks/tensorflow_experimental.framework/Headers/third_party/eigen3",
+					"$(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/downloads/eigen",
+					"$(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/downloads",
+					"$(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/downloads/protobuf/src",
+					"$(SRCROOT)/../../../../../tensorflow",
+					"$(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/gen/proto",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = RNTensorflow;
 				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../../../../../tensorflow $(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/downloads/protobuf/src $(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/downloads $(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/gen/proto $(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/downloads/eigen $(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/downloads/nsync/public";
 			};
 			name = Debug;
 		};
@@ -260,11 +288,17 @@
 					"$(SRCROOT)/../../../ios/Pods/TensorFlow-experimental/Frameworks/tensorflow_experimental.framework/Headers",
 					"$(SRCROOT)/../../../ios/Pods/Headers/Public/TensorFlow-experimental/tensorflow_experimental/third_party/eigen3",
 					"$(SRCROOT)/../../../ios/Pods/TensorFlow-experimental/Frameworks/tensorflow_experimental.framework/Headers/third_party/eigen3",
+					"$(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/downloads/eigen",
+					"$(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/downloads",
+					"$(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/downloads/protobuf/src",
+					"$(SRCROOT)/../../../../../tensorflow",
+					"$(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/gen/proto",
 				);
 				LIBRARY_SEARCH_PATHS = "$(inherited)";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = RNTensorflow;
 				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = "$(SRCROOT)/../../../../../tensorflow $(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/downloads/protobuf/src $(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/downloads $(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/gen/proto $(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/downloads/eigen $(SRCROOT)/../../../../../tensorflow/tensorflow/contrib/makefile/downloads/nsync/public";
 			};
 			name = Release;
 		};

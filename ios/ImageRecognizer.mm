@@ -8,7 +8,7 @@
 @implementation ImageRecognizer
 {
     TensorFlowInference * inference;
-    NSArray * labels;
+    NSDictionary * labels;
     NSNumber * imageMean;
     NSNumber * imageStd;
 }
@@ -28,7 +28,9 @@
 }
 
 - (NSArray *) recognizeImage:(NSString *)image inputName:(NSString *)inputName inputSize:(NSNumber *)inputSize
-                  outputNames:(NSArray *)outputNames maxResults:(NSNumber *)maxResults threshold:(NSNumber *)threshold
+         outputNames:(NSArray *)outputNames maxResults:(NSNumber *)maxResults
+         thresholdOutputName:(NSString *)thresholdOutputName threshold:(NSNumber *)threshold
+         labelOutputName: (NSString *)labelOutputName
 {
     NSString * inputNameResolved = inputName != nil ? inputName : @"input";
     NSNumber * inputSizeResolved = inputSize != nil ? inputSize : [NSNumber numberWithInt:224];
@@ -40,33 +42,35 @@
     tensorflow::Tensor tensor = createImageTensor(imageData, "jpg", [inputSizeResolved floatValue], [imageMean floatValue], [imageStd floatValue]);
     [inference feed:inputNameResolved tensor:tensor];
     [inference run:outputNames enableStats:false];
-
-    NSMutableArray * all_results = [NSMutableArray new];
-    for (int i = 0; i < [outputNames count]; ++i) {
-        NSString * outputName = [outputNames objectAtIndex:i];
-        LOG(INFO) << "Fetching output " << [outputName UTF8String];
-
-        NSArray * outputs = [inference fetch:outputName];
-        LOG(INFO) << [outputName UTF8String] << " got count " << [outputs count];
-
-        NSMutableArray * results = [NSMutableArray new];
-        for (NSUInteger i = 0; i < [outputs count]; i++) {
-            id output = [outputs objectAtIndex:i];
-            if(output > thresholdResolved) {
-                NSDictionary * entry = @{@"id": @(i), @"name": [labels count] > i ? labels[i] : @"unknown", @"confidence": output};
-                [results addObject:entry];
-            }
-        }
-
-        NSArray * resultsSorted = [results sortedArrayUsingComparator:^NSComparisonResult(id first, id second) {
-            return [second[@"confidence"] compare:first[@"confidence"]];
-        }];
-
-        auto finalSize = MIN([resultsSorted count], [maxResultsResolved integerValue]);
-        [all_results addObject:[resultsSorted subarrayWithRange:NSMakeRange(0, finalSize)]];
+    
+    NSMutableDictionary * dict = [NSMutableDictionary dictionary];
+    for (NSString * outputName in outputNames) {
+        dict[outputName] = [inference fetch:outputName];
     }
 
-    return all_results;
+    NSMutableArray * results = [NSMutableArray new];
+    NSArray * thresholdOutput = dict[thresholdOutputName];
+    for (int i = 0; i < [thresholdOutput count]; i++) {
+        NSNumber * score = [thresholdOutput objectAtIndex:i];
+        if ([score floatValue] >= [thresholdResolved floatValue]) {
+            NSMutableDictionary * entry = [NSMutableDictionary dictionary];
+            for (NSString * outputName in [dict allKeys]) {
+                id output = [dict[outputName] objectAtIndex:i];
+                entry[outputName] = output;
+                if (labelOutputName && [outputName isEqualToString:labelOutputName]) {
+                    entry[@"name"] = labels[output][@"name"];
+                    entry[@"display_name"] = labels[output][@"display_name"];
+                }
+            }
+            [results addObject:entry];
+        }
+    }
+
+    NSArray * resultsSorted = [results sortedArrayUsingComparator:^NSComparisonResult(id first, id second) {
+      return [second[thresholdOutputName] compare:first[thresholdOutputName]];
+    }];
+    auto finalSize = MIN([resultsSorted count], [maxResultsResolved integerValue]);
+    return [resultsSorted subarrayWithRange:NSMakeRange(0, finalSize)];
 }
 
 tensorflow::Tensor createImageTensor(NSData * data, const char* image_type, float input_size, float input_mean, float input_std) {
@@ -167,7 +171,7 @@ NSData* loadFile(NSString * uri) {
     return [NSData dataWithContentsOfFile:path];
 }
 
-NSArray * loadLabels(NSString * labelUri) {
+NSDictionary * loadLabels(NSString * labelUri) {
     NSData * labelData = loadFile(labelUri);
     NSString * labelString = [[NSString alloc] initWithData:labelData encoding:NSUTF8StringEncoding];
     NSRegularExpression * regex = [NSRegularExpression
@@ -175,18 +179,17 @@ NSArray * loadLabels(NSString * labelUri) {
         options:NSRegularExpressionDotMatchesLineSeparators error:nil];
     NSArray * matches = [regex matchesInString:labelString options:0 range:NSMakeRange(0, [labelString length])];
     LOG(INFO) << "Found " << [matches count] << " labels";
-    NSMutableArray * labelArray = [NSMutableArray new];
+    NSMutableDictionary * dict = [NSMutableDictionary dictionary];
+    
     NSNumberFormatter * formatter = [[NSNumberFormatter alloc] init];
     formatter.numberStyle = NSNumberFormatterDecimalStyle;
-    
     for (NSTextCheckingResult * match in matches) {
         NSString * name = [labelString substringWithRange:[match rangeAtIndex:1]];
         NSNumber * item_id = [formatter numberFromString:[labelString substringWithRange:[match rangeAtIndex:2]]];
         NSString * displayName = [labelString substringWithRange:[match rangeAtIndex:3]];
-        NSDictionary * entry = @{ name:name, item_id:item_id, displayName:displayName };
-        [labelArray addObject:entry];
+        dict[item_id] = @{ @"name":name, @"item_id":item_id, @"display_name":displayName };
     }
-    return labelArray;
+    return dict;
 }
 
 @end

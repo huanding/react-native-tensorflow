@@ -128,7 +128,7 @@ namespace {
 - (NSArray *) fetch:(NSString *)outputName
 {
     int i = 0;
-    tensorflow::Tensor *tensor;
+    tensorflow::Tensor *tensor = nil;
     for(auto n : fetchNames) {
         if (n == [outputName UTF8String]) {
             tensor = &fetchTensors[i];
@@ -137,7 +137,6 @@ namespace {
     }
     
     NSArray *result = convertFetchResult(tensor);
-    delete tensor;
     
     return result;
 }

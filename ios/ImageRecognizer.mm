@@ -39,10 +39,10 @@
     return self;
 }
 
-- (NSArray *) recognizeImage:(NSString *)image inputName:(NSString *)inputName inputSize:(NSNumber *)inputSize outputName:(NSString *)outputName maxResults:(NSNumber *)maxResults threshold:(NSNumber *)threshold
+- (NSArray *) recognizeImage:(NSString *)image inputName:(NSString *)inputName inputSize:(NSNumber *)inputSize
+                  outputNames:(NSArray *)outputNames maxResults:(NSNumber *)maxResults threshold:(NSNumber *)threshold
 {
     NSString * inputNameResolved = inputName != nil ? inputName : @"input";
-    NSString * outputNameResolved = outputName != nil ? outputName : @"output";
     NSNumber * inputSizeResolved = inputSize != nil ? inputSize : [NSNumber numberWithInt:224];
     NSNumber * maxResultsResolved = maxResults != nil ? maxResults : [NSNumber numberWithInt:3];
     NSNumber * thresholdResolved = threshold != nil ? threshold : [NSNumber numberWithFloat:0.1];
@@ -64,24 +64,34 @@
     
     tensorflow::Tensor tensor = createImageTensor(imageData, [imageType UTF8String], [inputSizeResolved floatValue], [imageMean floatValue], [imageStd floatValue]);
     [inference feed:inputNameResolved tensor:tensor];
-    [inference run:[[NSArray alloc] initWithObjects:outputNameResolved, nil] enableStats:false];
-    NSArray * outputs = [inference fetch:outputNameResolved];
+    [inference run:outputNames enableStats:false];
     
-    NSMutableArray * results = [NSMutableArray new];
-    for (NSUInteger i = 0; i < [outputs count]; i++) {
-        id output = [outputs objectAtIndex:i];
-        if(output > thresholdResolved) {
-            NSDictionary * entry = @{@"id": @(i), @"name": [labels count] > i ? labels[i] : @"unknown", @"confidence": output};
-            [results addObject:entry];
+    NSMutableArray * all_results = [NSMutableArray new];
+    for (int i = 0; i < [outputNames count]; ++i) {
+        NSString * outputName = [outputNames objectAtIndex:i];
+        LOG(INFO) << "Fetching output " << [outputName UTF8String];
+
+        NSArray * outputs = [inference fetch:outputName];
+        LOG(INFO) << [outputName UTF8String] << " got count " << [outputs count];
+        
+        NSMutableArray * results = [NSMutableArray new];
+        for (NSUInteger i = 0; i < [outputs count]; i++) {
+            id output = [outputs objectAtIndex:i];
+            if(output > thresholdResolved) {
+                NSDictionary * entry = @{@"id": @(i), @"name": [labels count] > i ? labels[i] : @"unknown", @"confidence": output};
+                [results addObject:entry];
+            }
         }
+        
+        NSArray * resultsSorted = [results sortedArrayUsingComparator:^NSComparisonResult(id first, id second) {
+            return [second[@"confidence"] compare:first[@"confidence"]];
+        }];
+        
+        auto finalSize = MIN([resultsSorted count], [maxResultsResolved integerValue]);
+        [all_results addObject:[resultsSorted subarrayWithRange:NSMakeRange(0, finalSize)]];
     }
     
-    NSArray * resultsSorted = [results sortedArrayUsingComparator:^NSComparisonResult(id first, id second) {
-        return [second[@"confidence"] compare:first[@"confidence"]];
-    }];
-    
-    auto finalSize = MIN([resultsSorted count], [maxResultsResolved integerValue]);
-    return [resultsSorted subarrayWithRange:NSMakeRange(0, finalSize)];
+    return all_results;
 }
 
 tensorflow::Tensor createImageTensor(NSData * data, const char* image_type, float input_size, float input_mean, float input_std) {
@@ -94,19 +104,19 @@ tensorflow::Tensor createImageTensor(NSData * data, const char* image_type, floa
     const int wanted_height = input_size;
     const int wanted_channels = 3;
     
-    tensorflow::Tensor image_tensor(tensorflow::DT_FLOAT, tensorflow::TensorShape({1, wanted_height, wanted_width, wanted_channels}));
-    auto image_tensor_mapped = image_tensor.tensor<float, 4>();
+    tensorflow::Tensor image_tensor(tensorflow::DT_UINT8, tensorflow::TensorShape({1, wanted_height, wanted_width, wanted_channels}));
+    auto image_tensor_mapped = image_tensor.tensor<unsigned char, 4>();
     tensorflow::uint8* in = image_data.data();
     
-    float* out = image_tensor_mapped.data();
+    unsigned char * out = image_tensor_mapped.data();
     for (int y = 0; y < wanted_height; ++y) {
         const int in_y = (y * image_height) / wanted_height;
         tensorflow::uint8* in_row = in + (in_y * image_width * image_channels);
-        float* out_row = out + (y * wanted_width * wanted_channels);
+        unsigned char * out_row = out + (y * wanted_width * wanted_channels);
         for (int x = 0; x < wanted_width; ++x) {
             const int in_x = (x * image_width) / wanted_width;
             tensorflow::uint8* in_pixel = in_row + (in_x * image_channels);
-            float* out_pixel = out_row + (x * wanted_channels);
+            unsigned char * out_pixel = out_row + (x * wanted_channels);
             for (int c = 0; c < wanted_channels; ++c) {
                 out_pixel[c] = (in_pixel[c] - input_mean) / input_std;
             }
@@ -132,7 +142,7 @@ std::vector<tensorflow::uint8> imageAsVector(NSData * data, const char* image_ty
         } catch( std::exception& e ) {
             CFRelease(image_provider);
             CFRelease(file_data_ref);
-            fprintf(stderr, "Unknown iamge type\n");
+            fprintf(stderr, "Unknown image type\n");
             *out_width = 0;
             *out_height = 0;
             *out_channels = 0;
@@ -142,6 +152,7 @@ std::vector<tensorflow::uint8> imageAsVector(NSData * data, const char* image_ty
     
     const int width = (int)CGImageGetWidth(image);
     const int height = (int)CGImageGetHeight(image);
+    LOG(INFO) << "image width: " << width << " height: " << height;
     const int channels = 4;
     CGColorSpaceRef color_space = CGColorSpaceCreateDeviceRGB();
     const int bytes_per_row = (width * channels);

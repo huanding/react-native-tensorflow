@@ -5,8 +5,5 @@
 
 @interface ImageRecognizer: NSObject
 - (id) initWithData:(NSString *)model labels:(NSString *)labels imageMean:(NSNumber *)imageMean imageStd:(NSNumber *)imageStd;
-- (NSArray *) recognizeImage:(NSString *)image inputName:(NSString *)inputName inputSize:(NSNumber *)inputSize
-    outputNames:(NSArray *)outputNames maxResults:(NSNumber *)maxResults
-    thresholdOutputName:(NSString *)thresholdOutputName threshold:(NSNumber *)threshold
-    labelOutputName:(NSString *)labelOutputName;
+- (NSArray *) recognizeImage:(NSString *)image inputSize:(NSNumber *)inputSize maxResults:(NSNumber *)maxResults threshold:(NSNumber *)threshold;
 @end

@@ -156,7 +156,6 @@ NSArray* convertFetchResult(tensorflow::Tensor *tensor) {
         for (int index = 0; index < predictions.size(); index += 1) {
             [result addObject:[NSNumber numberWithFloat:predictions(index)]];
         }
-        
         return result;
     } else if(tensor->dtype() == tensorflow::DataType::DT_INT32) {
         auto predictions = tensor->flat<tensorflow::int32>();

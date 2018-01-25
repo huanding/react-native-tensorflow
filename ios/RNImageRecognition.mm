@@ -45,19 +45,12 @@ RCT_EXPORT_METHOD(recognize:(NSString *)tId data:(NSDictionary *)data resolver:(
 {
     try {
         NSString * image = data[@"image"];
-        NSString * inputName = [data objectForKey:@"inputName"];
         NSNumber * inputSize = [data objectForKey:@"inputSize"];
-        NSArray * outputNames = [data objectForKey:@"outputNames"];
         NSNumber * maxResults = [data objectForKey:@"maxResults"];
-        NSString * thresholdOutputName = [data objectForKey:@"thresholdOutputName"];
         NSNumber * threshold = [data objectForKey:@"threshold"];
-        NSString * labelOutputName = [data objectForKey:@"labelOutputName"];
         
         ImageRecognizer * imageRecognizer = imageRecognizers[[tId UTF8String]];
-        NSArray * result = [imageRecognizer recognizeImage:image inputName:inputName inputSize:inputSize
-            outputNames:outputNames maxResults:maxResults
-            thresholdOutputName:thresholdOutputName threshold:threshold
-            labelOutputName:labelOutputName];
+        NSArray * result = [imageRecognizer recognizeImage:image inputSize:inputSize maxResults:maxResults threshold:threshold];
         resolve(result);
     } catch( std::exception& e ) {
         reject(RCTErrorUnspecified, @(e.what()), nil);

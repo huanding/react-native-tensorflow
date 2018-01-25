@@ -27,12 +27,8 @@
     return self;
 }
 
-- (NSArray *) recognizeImage:(NSString *)image inputName:(NSString *)inputName inputSize:(NSNumber *)inputSize
-         outputNames:(NSArray *)outputNames maxResults:(NSNumber *)maxResults
-         thresholdOutputName:(NSString *)thresholdOutputName threshold:(NSNumber *)threshold
-         labelOutputName: (NSString *)labelOutputName
+- (NSArray *) recognizeImage:(NSString *)image inputSize:(NSNumber *)inputSize maxResults:(NSNumber *)maxResults threshold:(NSNumber *)threshold
 {
-    NSString * inputNameResolved = inputName != nil ? inputName : @"input";
     NSNumber * inputSizeResolved = inputSize != nil ? inputSize : [NSNumber numberWithInt:224];
     NSNumber * maxResultsResolved = maxResults != nil ? maxResults : [NSNumber numberWithInt:3];
     NSNumber * thresholdResolved = threshold != nil ? threshold : [NSNumber numberWithFloat:0.1];
@@ -40,34 +36,47 @@
     NSData * imageData = loadFile(image);
 
     tensorflow::Tensor tensor = createImageTensor(imageData, "jpg", [inputSizeResolved floatValue], [imageMean floatValue], [imageStd floatValue]);
-    [inference feed:inputNameResolved tensor:tensor];
+    [inference feed:@"image_tensor" tensor:tensor];
+    
+    NSArray * outputNames = [NSArray arrayWithObjects:@"detection_classes", @"detection_scores", @"detection_boxes", @"num_detections", nil];
     [inference run:outputNames enableStats:false];
     
-    NSMutableDictionary * dict = [NSMutableDictionary dictionary];
-    for (NSString * outputName in outputNames) {
-        dict[outputName] = [inference fetch:outputName];
+    NSArray * num_output = [inference fetch:@"num_detections"];
+    if ([num_output count] != 1) {
+        throw std::invalid_argument("wrong number of detections");
+    }
+    int num = [[num_output objectAtIndex:0] intValue];
+    
+    NSArray * classes_output = [inference fetch:@"detection_classes"];
+    if ([classes_output count] != num) {
+        throw std::invalid_argument("wrong number of detection classes");
+    }
+    NSArray * scores_output = [inference fetch:@"detection_scores"];
+    if ([scores_output count] != num) {
+        throw std::invalid_argument("wrong number of detection scores");
+    }
+    NSArray * boxes_output = [inference fetch:@"detection_boxes"];
+    if ([boxes_output count] != num * 4) {
+        throw std::invalid_argument("wrong number of detection boxes");
     }
 
     NSMutableArray * results = [NSMutableArray new];
-    NSArray * thresholdOutput = dict[thresholdOutputName];
-    for (int i = 0; i < [thresholdOutput count]; i++) {
-        NSNumber * score = [thresholdOutput objectAtIndex:i];
+    for (int i = 0; i < [scores_output count]; i++) {
+        NSNumber * score = [scores_output objectAtIndex:i];
         if ([score floatValue] >= [thresholdResolved floatValue]) {
             NSMutableDictionary * entry = [NSMutableDictionary dictionary];
-            for (NSString * outputName in [dict allKeys]) {
-                id output = [dict[outputName] objectAtIndex:i];
-                entry[outputName] = output;
-                if (labelOutputName && [outputName isEqualToString:labelOutputName]) {
-                    entry[@"name"] = labels[output][@"name"];
-                    entry[@"display_name"] = labels[output][@"display_name"];
-                }
-            }
+            NSNumber * item_id = [classes_output objectAtIndex:i];
+            entry[@"score"] = score;
+            entry[@"item_id"] = item_id;
+            entry[@"name"] = labels[item_id][@"name"];
+            entry[@"display_name"] = labels[item_id][@"display_name"];
+            entry[@"box"] = [boxes_output subarrayWithRange: NSMakeRange(i * 4, 4)];
             [results addObject:entry];
         }
     }
 
     NSArray * resultsSorted = [results sortedArrayUsingComparator:^NSComparisonResult(id first, id second) {
-      return [second[thresholdOutputName] compare:first[thresholdOutputName]];
+      return [second[@"score"] compare:first[@"score"]];
     }];
     auto finalSize = MIN([resultsSorted count], [maxResultsResolved integerValue]);
     return [resultsSorted subarrayWithRange:NSMakeRange(0, finalSize)];
@@ -187,7 +196,10 @@ NSDictionary * loadLabels(NSString * labelUri) {
         NSString * name = [labelString substringWithRange:[match rangeAtIndex:1]];
         NSNumber * item_id = [formatter numberFromString:[labelString substringWithRange:[match rangeAtIndex:2]]];
         NSString * displayName = [labelString substringWithRange:[match rangeAtIndex:3]];
-        dict[item_id] = @{ @"name":name, @"item_id":item_id, @"display_name":displayName };
+        dict[item_id] = @{
+          @"name":[name stringByReplacingOccurrencesOfString:@"\\'" withString:@"'"],
+          @"item_id":item_id,
+          @"display_name":[displayName stringByReplacingOccurrencesOfString:@"\\'" withString:@"'"] };
     }
     return dict;
 }

@@ -9,11 +9,11 @@ namespace {
     public:
         explicit InputStream(const std::string& file_name) : ifstream_(file_name.c_str(), std::ios::in | std::ios::binary) {
         }
-        
+
         ~InputStream() {
             ifstream_.close();
         }
-        
+
         int Read(void* buffer, int size) {
             if (!ifstream_) {
                 return -1;
@@ -21,7 +21,7 @@ namespace {
             ifstream_.read(static_cast<char*>(buffer), size);
             return ifstream_.gcount();
         }
-        
+
     private:
         std::ifstream ifstream_;
     };
@@ -31,10 +31,10 @@ namespace {
 {
     std::shared_ptr<tensorflow::Session> session;
     std::shared_ptr<tensorflow::GraphDef> tensorflowGraph;
-    
+
     std::vector<std::string> feedNames;
     std::vector<tensorflow::Tensor> feedTensors;
-    
+
     std::vector<std::string> fetchNames;
     std::vector<tensorflow::Tensor> fetchTensors;
 }
@@ -50,23 +50,28 @@ namespace {
 - (id) initTensorFlow:(NSString *)modelLocation
 {
     tensorflow::GraphDef graph;
-    LOG(INFO) << "Graph created.";
-    
+    LOG(INFO) << "Graph created";
+
     NSURL *url = [NSURL URLWithString:modelLocation];
     if (url && url.scheme && url.host) {
+        LOG(INFO) << "Loading model from url " << [[url absoluteString] UTF8String];
         NSData *data = [NSData dataWithContentsOfURL:url];
-        
+
         const void *buf = [data bytes];
         unsigned long numBytes = [data length];
-        
+
         graph.ParseFromArray(buf, numBytes);
+    } else if ([modelLocation hasPrefix:@"/"]) {
+        LOG(INFO) << "Loading model from local file " << [modelLocation UTF8String];
+        fileToProto([modelLocation UTF8String], &graph);
     } else {
         NSString* network_path = filePathForResource([modelLocation substringToIndex:[modelLocation length] - 3], @"pb");
+        LOG(INFO) << "Loading model from resource " << [network_path UTF8String];
         fileToProto([network_path UTF8String], &graph);
     }
-    
+
     tensorflow::SessionOptions options;
-    
+
     tensorflow::Session* session_pointer = nullptr;
     tensorflow::Status session_status = tensorflow::NewSession(options, &session_pointer);
     if (!session_status.ok()) {
@@ -77,7 +82,7 @@ namespace {
     }
     std::shared_ptr<tensorflow::Session> sess(session_pointer);
     LOG(INFO) << "Session created.";
-    
+
     LOG(INFO) << "Creating session.";
     tensorflow::Status s = sess->Create(graph);
     if (!s.ok()) {
@@ -85,10 +90,10 @@ namespace {
         str << "Could not create TensorFlow Graph: " << s;
         throw std::runtime_error(str.str());
     }
-    
+
     session = sess;
     tensorflowGraph = std::make_shared<tensorflow::GraphDef>(graph);
-    
+
     return self;
 }
 
@@ -104,23 +109,23 @@ namespace {
     for (int i = 0; i < feedNames.size(); ++i) {
         feedC[i] = {feedNames[i], feedTensors[i]};
     }
-    
+
     int outputNamesCount = [outputNames count];
     std::vector<std::string> outputNamesC(outputNamesCount);
     for (int i = 0; i < [outputNames count]; ++i) {
         outputNamesC[i] = [[outputNames objectAtIndex:i] UTF8String];
     }
-    
+
     std::vector<tensorflow::Tensor> outputs;
     tensorflow::Status run_status = session->Run(feedC, outputNamesC, {}, &outputs);
-    
+
     if (!run_status.ok()) {
         tensorflow::LogAllRegisteredKernels();
         std::stringstream str;
         str << "Running model failed: " << run_status;
         throw std::runtime_error(str.str());
     }
-    
+
     fetchNames = outputNamesC;
     fetchTensors = outputs;
 }
@@ -135,9 +140,9 @@ namespace {
         }
         ++i;
     }
-    
+
     NSArray *result = convertFetchResult(tensor);
-    
+
     return result;
 }
 
@@ -148,7 +153,7 @@ NSArray* convertFetchResult(tensorflow::Tensor *tensor) {
         for (int index = 0; index < predictions.size(); index += 1) {
             [result addObject:[NSNumber numberWithDouble:predictions(index)]];
         }
-        
+
         return result;
     } else if(tensor->dtype() == tensorflow::DataType::DT_FLOAT) {
         auto predictions = tensor->flat<float>();
@@ -163,7 +168,7 @@ NSArray* convertFetchResult(tensorflow::Tensor *tensor) {
         for (int index = 0; index < predictions.size(); index += 1) {
             [result addObject:[NSNumber numberWithInt:predictions(index)]];
         }
-        
+
         return result;
     } else if(tensor->dtype() == tensorflow::DataType::DT_INT64) {
         auto predictions = tensor->flat<tensorflow::int64>();
@@ -171,7 +176,7 @@ NSArray* convertFetchResult(tensorflow::Tensor *tensor) {
         for (int index = 0; index < predictions.size(); index += 1) {
             [result addObject:[NSNumber numberWithLong:predictions(index)]];
         }
-        
+
         return result;
     } else if(tensor->dtype() == tensorflow::DataType::DT_UINT8) {
         auto predictions = tensor->flat<tensorflow::uint8>();
@@ -179,7 +184,7 @@ NSArray* convertFetchResult(tensorflow::Tensor *tensor) {
         for (int index = 0; index < predictions.size(); index += 1) {
             [result addObject:[NSNumber numberWithInt:predictions(index)]];
         }
-        
+
         return result;
     } else if(tensor->dtype() == tensorflow::DataType::DT_BOOL) {
         auto predictions = tensor->flat<bool>();
@@ -187,7 +192,7 @@ NSArray* convertFetchResult(tensorflow::Tensor *tensor) {
         for (int index = 0; index < predictions.size(); index += 1) {
             [result addObject:predictions(index) == true ? [NSNumber numberWithBool:YES] : [NSNumber numberWithBool:NO]];
         }
-        
+
         return result;
     } else if(tensor->dtype() == tensorflow::DataType::DT_STRING) {
         auto predictions = tensor->flat<tensorflow::string>();
@@ -195,12 +200,12 @@ NSArray* convertFetchResult(tensorflow::Tensor *tensor) {
         for (int index = 0; index < predictions.size(); index += 1) {
             [result addObject:[NSString stringWithUTF8String:predictions(index).c_str()]];
         }
-        
+
         return result;
     } else {
         throw std::invalid_argument("Invalid data type");
     }
-    
+
 }
 
 -(std::shared_ptr<tensorflow::GraphDef>) graph
@@ -214,7 +219,7 @@ NSArray* convertFetchResult(tensorflow::Tensor *tensor) {
     feedTensors.clear();
     fetchNames.clear();
     fetchTensors.clear();
-    
+
     return session->Close();
 }
 

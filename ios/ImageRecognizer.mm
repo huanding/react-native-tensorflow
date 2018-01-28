@@ -13,13 +13,10 @@
     NSNumber * imageStd;
 }
 
-- (id) initWithData:(NSString *)modelInput labels:(NSString *)labelsInput imageMean:(NSNumber *)imageMeanInput imageStd:(NSNumber *)imageStdInput
+- (id) initWithData:(NSString *)modelInput labels:(NSString *)labelsInput
 {
     self = [super init];
     if (self != nil) {
-        imageMean = imageMeanInput != nil ? imageMeanInput : [NSNumber numberWithInt:117];
-        imageStd = imageStdInput != nil ? imageStdInput : [NSNumber numberWithFloat:1];
-
         TensorFlowInference * tensorFlowInference = [[TensorFlowInference alloc] initWithModel:modelInput];
         inference = tensorFlowInference;
         labels = loadLabels(labelsInput);
@@ -27,26 +24,25 @@
     return self;
 }
 
-- (NSArray *) recognizeImage:(NSString *)image inputSize:(NSNumber *)inputSize maxResults:(NSNumber *)maxResults threshold:(NSNumber *)threshold
+- (NSArray *) recognizeImage:(NSString *)image maxResults:(NSNumber *)maxResults threshold:(NSNumber *)threshold
 {
-    NSNumber * inputSizeResolved = inputSize != nil ? inputSize : [NSNumber numberWithInt:224];
     NSNumber * maxResultsResolved = maxResults != nil ? maxResults : [NSNumber numberWithInt:3];
     NSNumber * thresholdResolved = threshold != nil ? threshold : [NSNumber numberWithFloat:0.1];
 
     NSData * imageData = loadFile(image);
 
-    tensorflow::Tensor tensor = createImageTensor(imageData, "jpg", [inputSizeResolved floatValue], [imageMean floatValue], [imageStd floatValue]);
+    tensorflow::Tensor tensor = createImageTensor(imageData, "jpg");
     [inference feed:@"image_tensor" tensor:tensor];
-    
+
     NSArray * outputNames = [NSArray arrayWithObjects:@"detection_classes", @"detection_scores", @"detection_boxes", @"num_detections", nil];
     [inference run:outputNames enableStats:false];
-    
+
     NSArray * num_output = [inference fetch:@"num_detections"];
     if ([num_output count] != 1) {
         throw std::invalid_argument("wrong number of detections");
     }
     int num = [[num_output objectAtIndex:0] intValue];
-    
+
     NSArray * classes_output = [inference fetch:@"detection_classes"];
     if ([classes_output count] != num) {
         throw std::invalid_argument("wrong number of detection classes");
@@ -82,31 +78,27 @@
     return [resultsSorted subarrayWithRange:NSMakeRange(0, finalSize)];
 }
 
-tensorflow::Tensor createImageTensor(NSData * data, const char* image_type, float input_size, float input_mean, float input_std) {
+tensorflow::Tensor createImageTensor(NSData * data, const char* image_type) {
     int image_width;
     int image_height;
     int image_channels;
     std::vector<tensorflow::uint8> image_data = imageAsVector(data, image_type, &image_width, &image_height, &image_channels);
 
-    const int wanted_width = input_size;
-    const int wanted_height = input_size;
     const int wanted_channels = 3;
 
-    tensorflow::Tensor image_tensor(tensorflow::DT_UINT8, tensorflow::TensorShape({1, wanted_height, wanted_width, wanted_channels}));
+    tensorflow::Tensor image_tensor(tensorflow::DT_UINT8, tensorflow::TensorShape({1, image_height, image_width, wanted_channels}));
     auto image_tensor_mapped = image_tensor.tensor<unsigned char, 4>();
     tensorflow::uint8* in = image_data.data();
 
     unsigned char * out = image_tensor_mapped.data();
-    for (int y = 0; y < wanted_height; ++y) {
-        const int in_y = (y * image_height) / wanted_height;
-        tensorflow::uint8* in_row = in + (in_y * image_width * image_channels);
-        unsigned char * out_row = out + (y * wanted_width * wanted_channels);
-        for (int x = 0; x < wanted_width; ++x) {
-            const int in_x = (x * image_width) / wanted_width;
-            tensorflow::uint8* in_pixel = in_row + (in_x * image_channels);
+    for (int y = 0; y < image_height; ++y) {
+        tensorflow::uint8* in_row = in + (y * image_width * image_channels);
+        unsigned char * out_row = out + (y * image_width * wanted_channels);
+        for (int x = 0; x < image_width; ++x) {
+            tensorflow::uint8* in_pixel = in_row + (x * image_channels);
             unsigned char * out_pixel = out_row + (x * wanted_channels);
             for (int c = 0; c < wanted_channels; ++c) {
-                out_pixel[c] = (in_pixel[c] - input_mean) / input_std;
+                out_pixel[c] = in_pixel[c];
             }
         }
     }
@@ -162,7 +154,6 @@ std::vector<tensorflow::uint8> imageAsVector(NSData * data, const char* image_ty
     return result;
 }
 
-
 NSData* loadFile(NSString * uri) {
     NSURL *url = [NSURL URLWithString:uri];
     if (url && url.scheme && url.host) {
@@ -189,7 +180,7 @@ NSDictionary * loadLabels(NSString * labelUri) {
     NSArray * matches = [regex matchesInString:labelString options:0 range:NSMakeRange(0, [labelString length])];
     LOG(INFO) << "Found " << [matches count] << " labels";
     NSMutableDictionary * dict = [NSMutableDictionary dictionary];
-    
+
     NSNumberFormatter * formatter = [[NSNumberFormatter alloc] init];
     formatter.numberStyle = NSNumberFormatterDecimalStyle;
     for (NSTextCheckingResult * match in matches) {

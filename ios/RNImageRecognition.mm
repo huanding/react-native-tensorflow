@@ -29,10 +29,8 @@ RCT_EXPORT_METHOD(initImageRecognizer:(NSString *)tId data:(NSDictionary *)data 
     try {
         NSString * model = data[@"model"];
         NSString * labels = data[@"labels"];
-        NSNumber * imageMean = [data objectForKey:@"imageMean"];
-        NSNumber * imageStd = [data objectForKey:@"imageStd"];
         
-        ImageRecognizer * imageRecognizer = [[ImageRecognizer alloc] initWithData:model labels:labels imageMean:imageMean imageStd:imageStd];
+        ImageRecognizer * imageRecognizer = [[ImageRecognizer alloc] initWithData:model labels:labels];
         imageRecognizers[[tId UTF8String]] = imageRecognizer;
         
         resolve(@1);
@@ -50,7 +48,7 @@ RCT_EXPORT_METHOD(recognize:(NSString *)tId data:(NSDictionary *)data resolver:(
         NSNumber * threshold = [data objectForKey:@"threshold"];
         
         ImageRecognizer * imageRecognizer = imageRecognizers[[tId UTF8String]];
-        NSArray * result = [imageRecognizer recognizeImage:image inputSize:inputSize maxResults:maxResults threshold:threshold];
+        NSArray * result = [imageRecognizer recognizeImage:image maxResults:maxResults threshold:threshold];
         resolve(result);
     } catch( std::exception& e ) {
         reject(RCTErrorUnspecified, @(e.what()), nil);

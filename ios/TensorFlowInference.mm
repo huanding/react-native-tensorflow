@@ -1,8 +1,9 @@
 #import "TensorFlowInference.h"
 
+#include "URLHelper.h"
+
 #include <string>
 #include <fstream>
-
 
 namespace {
     class InputStream : public ::google::protobuf::io::CopyingInputStream {
@@ -50,25 +51,14 @@ namespace {
 - (id) initTensorFlow:(NSString *)modelLocation
 {
     tensorflow::GraphDef graph;
-    LOG(INFO) << "Graph created";
+    LOG(INFO) << "Creating graph for " << [modelLocation UTF8String];
 
-    NSURL *url = [NSURL URLWithString:modelLocation];
-    if (url && url.scheme && url.host) {
-        LOG(INFO) << "Loading model from url " << [[url absoluteString] UTF8String];
-        NSData *data = [NSData dataWithContentsOfURL:url];
+    NSURL *url = [URLHelper toURL:modelLocation];
+    NSData *data = [NSData dataWithContentsOfURL:url];
 
-        const void *buf = [data bytes];
-        unsigned long numBytes = [data length];
-
-        graph.ParseFromArray(buf, numBytes);
-    } else if ([modelLocation hasPrefix:@"/"]) {
-        LOG(INFO) << "Loading model from local file " << [modelLocation UTF8String];
-        fileToProto([modelLocation UTF8String], &graph);
-    } else {
-        NSString* network_path = filePathForResource([modelLocation substringToIndex:[modelLocation length] - 3], @"pb");
-        LOG(INFO) << "Loading model from resource " << [network_path UTF8String];
-        fileToProto([network_path UTF8String], &graph);
-    }
+    const void *buf = [data bytes];
+    unsigned long numBytes = [data length];
+    graph.ParseFromArray(buf, numBytes);
 
     tensorflow::SessionOptions options;
 
@@ -221,24 +211,6 @@ NSArray* convertFetchResult(tensorflow::Tensor *tensor) {
     fetchTensors.clear();
 
     return session->Close();
-}
-
-NSString* filePathForResource(NSString* name, NSString* extension) {
-    NSString* file_path = [[NSBundle mainBundle] pathForResource:name ofType:extension];
-    if (file_path == NULL) {
-        std::stringstream str;
-        str << "Couldn't find '" << [name UTF8String] << "." << [extension UTF8String] << "' in bundle.";
-        throw std::invalid_argument(str.str());
-    }
-    return file_path;
-}
-
-bool fileToProto(const std::string& file_name, ::google::protobuf::MessageLite* proto) {
-    ::google::protobuf::io::CopyingInputStreamAdaptor stream(new InputStream(file_name));
-    stream.SetOwnsCopyingStream(true);
-    ::google::protobuf::io::CodedInputStream coded_stream(&stream);
-    coded_stream.SetTotalBytesLimit(1024LL << 20, 512LL << 20);
-    return proto->ParseFromCodedStream(&coded_stream);
 }
 
 @end

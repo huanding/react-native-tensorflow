@@ -10,6 +10,7 @@
 		975CD8451F79E183005D2BB8 /* RNTensorFlowInference.mm in Sources */ = {isa = PBXBuildFile; fileRef = 975CD8441F79E183005D2BB8 /* RNTensorFlowInference.mm */; };
 		975CD8481F79E1B6005D2BB8 /* RNTensorFlowGraph.mm in Sources */ = {isa = PBXBuildFile; fileRef = 975CD8471F79E1B6005D2BB8 /* RNTensorFlowGraph.mm */; };
 		975CD84A1F79E1C8005D2BB8 /* RNTensorFlowGraphOperations.mm in Sources */ = {isa = PBXBuildFile; fileRef = 975CD8491F79E1C8005D2BB8 /* RNTensorFlowGraphOperations.mm */; };
+		9F4BC796202C246F00725E1B /* URLHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F4BC795202C246F00725E1B /* URLHelper.mm */; };
 		A727A0BB1FCB466500D3B2C5 /* TensorFlowInference.mm in Sources */ = {isa = PBXBuildFile; fileRef = A727A0BA1FCB466500D3B2C5 /* TensorFlowInference.mm */; };
 		A7F0DCB51FDCD8C200E79844 /* ImageRecognizer.mm in Sources */ = {isa = PBXBuildFile; fileRef = A7F0DCB41FDCD8C200E79844 /* ImageRecognizer.mm */; };
 		A7F0DCB81FDCD8EA00E79844 /* RNImageRecognition.mm in Sources */ = {isa = PBXBuildFile; fileRef = A7F0DCB71FDCD8EA00E79844 /* RNImageRecognition.mm */; };
@@ -35,6 +36,8 @@
 		975CD8491F79E1C8005D2BB8 /* RNTensorFlowGraphOperations.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RNTensorFlowGraphOperations.mm; sourceTree = "<group>"; };
 		975CD84B1F79E1D7005D2BB8 /* RNTensorFlowGraph.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNTensorFlowGraph.h; sourceTree = "<group>"; };
 		975CD84C1F79E1E1005D2BB8 /* RNTensorFlowGraphOperations.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNTensorFlowGraphOperations.h; sourceTree = "<group>"; };
+		9F4BC794202C246F00725E1B /* URLHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = URLHelper.h; sourceTree = "<group>"; };
+		9F4BC795202C246F00725E1B /* URLHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = URLHelper.mm; sourceTree = "<group>"; };
 		A727A0B91FCB465600D3B2C5 /* TensorFlowInference.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TensorFlowInference.h; sourceTree = "<group>"; };
 		A727A0BA1FCB466500D3B2C5 /* TensorFlowInference.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TensorFlowInference.mm; sourceTree = "<group>"; };
 		A7F0DCB41FDCD8C200E79844 /* ImageRecognizer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ImageRecognizer.mm; sourceTree = "<group>"; };
@@ -77,6 +80,8 @@
 				975CD8471F79E1B6005D2BB8 /* RNTensorFlowGraph.mm */,
 				975CD8461F79E199005D2BB8 /* RNTensorFlowInference.h */,
 				975CD8441F79E183005D2BB8 /* RNTensorFlowInference.mm */,
+				9F4BC794202C246F00725E1B /* URLHelper.h */,
+				9F4BC795202C246F00725E1B /* URLHelper.mm */,
 				134814211AA4EA7D00B7C361 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -140,6 +145,7 @@
 				975CD8481F79E1B6005D2BB8 /* RNTensorFlowGraph.mm in Sources */,
 				A7F0DCB51FDCD8C200E79844 /* ImageRecognizer.mm in Sources */,
 				975CD84A1F79E1C8005D2BB8 /* RNTensorFlowGraphOperations.mm in Sources */,
+				9F4BC796202C246F00725E1B /* URLHelper.mm in Sources */,
 				A7F0DCB81FDCD8EA00E79844 /* RNImageRecognition.mm in Sources */,
 				A727A0BB1FCB466500D3B2C5 /* TensorFlowInference.mm in Sources */,
 				975CD8451F79E183005D2BB8 /* RNTensorFlowInference.mm in Sources */,

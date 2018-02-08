@@ -1,5 +1,5 @@
 #import "ImageRecognizer.h"
-
+#include "URLHelper.h"
 #include "TensorFlowInference.h"
 
 #import <ImageIO/ImageIO.h>
@@ -79,25 +79,18 @@
 }
 
 tensorflow::Tensor createImageTensor(NSString * imageUri) {
-    LOG(INFO) << "Loading image URL " << [imageUri UTF8String];
-    NSURL *url = [NSURL URLWithString:imageUri];
-    if (!url || !url.scheme || !url.host) {
-        url = [NSURL fileURLWithPath:imageUri];
-        if (!url || !url.scheme) {
-            throw std::invalid_argument("Invalid image uri");
-        }
-    }
-    
+    NSURL * url = [URLHelper toURL:imageUri];
+
     int image_width;
     int image_height;
     int image_channels;
     std::vector<tensorflow::uint8> image_data = imageAsVector(url, &image_width, &image_height, &image_channels);
-    
+
     const int wanted_channels = 3;
     tensorflow::Tensor image_tensor(tensorflow::DT_UINT8, tensorflow::TensorShape({1, image_height, image_width, wanted_channels}));
     auto image_tensor_mapped = image_tensor.tensor<unsigned char, 4>();
     tensorflow::uint8* in = image_data.data();
-    
+
     unsigned char * out = image_tensor_mapped.data();
     for (int y = 0; y < image_height; ++y) {
         tensorflow::uint8* in_row = in + (y * image_width * image_channels);
@@ -110,7 +103,7 @@ tensorflow::Tensor createImageTensor(NSString * imageUri) {
             }
         }
     }
-    
+
     return image_tensor;
 }
 
@@ -119,12 +112,12 @@ std::vector<tensorflow::uint8> imageAsVector(NSURL * imageUrl, int* out_width, i
     if(source==NULL) {
         throw std::invalid_argument("Failed to create image source from url");
     }
-    
+
     CGImageRef image = CGImageSourceCreateImageAtIndex(source, 0, NULL);
     if(image==NULL) {
         throw std::invalid_argument("Failed to create image ref from source");
     }
-    
+
     int orientation = 1;
     CFDictionaryRef dict = CGImageSourceCopyPropertiesAtIndex(source, 0, NULL);
     if(dict)
@@ -138,11 +131,11 @@ std::vector<tensorflow::uint8> imageAsVector(NSURL * imageUrl, int* out_width, i
     }
     LOG(INFO) << "Image orientation " << orientation;
     CFRelease(source);
-    
+
     int width = (int)CGImageGetWidth(image);
     int height = (int)CGImageGetHeight(image);
     int canvasw, canvash;
-    
+
     if(orientation<=4)
     {
         canvasw = width;
@@ -153,7 +146,7 @@ std::vector<tensorflow::uint8> imageAsVector(NSURL * imageUrl, int* out_width, i
         canvasw = height;
         canvash = width;
     }
-    
+
     const int channels = 4;
     const int bytes_per_row = (canvasw * channels);
     const int bytes_in_image = (bytes_per_row * canvash);
@@ -165,52 +158,52 @@ std::vector<tensorflow::uint8> imageAsVector(NSURL * imageUrl, int* out_width, i
         bits_per_component, bytes_per_row, color_space,
         kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
     CGColorSpaceRelease(color_space);
-    
+
     switch(orientation)
     {
         case 2:
             // 2 = 0th row is at the top, and 0th column is on the right - Flip Horizontal
             CGContextConcatCTM(context, CGAffineTransformMake(-1.0, 0.0, 0.0, 1.0, width, 0.0));
             break;
-            
+
         case 3:
             // 3 = 0th row is at the bottom, and 0th column is on the right - Rotate 180 degrees
             CGContextConcatCTM(context, CGAffineTransformMake(-1.0, 0.0, 0.0, -1.0, width, height));
             break;
-            
+
         case 4:
             // 4 = 0th row is at the bottom, and 0th column is on the left - Flip Vertical
             CGContextConcatCTM(context, CGAffineTransformMake(1.0, 0.0, 0, -1.0, 0.0, height));
             break;
-            
+
         case 5:
             // 5 = 0th row is on the left, and 0th column is the top - Rotate -90 degrees and Flip Vertical
             CGContextConcatCTM(context, CGAffineTransformMake(0.0, -1.0, -1.0, 0.0, height, width));
             break;
-            
+
         case 6:
             // 6 = 0th row is on the right, and 0th column is the top - Rotate 90 degrees
             CGContextConcatCTM(context, CGAffineTransformMake(0.0, -1.0, 1.0, 0.0, 0.0, width));
             break;
-            
+
         case 7:
             // 7 = 0th row is on the right, and 0th column is the bottom - Rotate 90 degrees and Flip Vertical
             CGContextConcatCTM(context, CGAffineTransformMake(0.0, 1.0, 1.0, 0.0, 0.0, 0.0));
             break;
-            
+
         case 8:
             // 8 = 0th row is on the left, and 0th column is the bottom - Rotate -90 degrees
             CGContextConcatCTM(context, CGAffineTransformMake(0.0, 1.0, -1.0, 0.0, height, 0.0));
             break;
-            
+
         default:
             break;
     }
-    
+
     CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
     CGContextRelease(context);
     CGImageRelease(image);
-    
+
     *out_width = canvasw;
     *out_height = canvash;
     *out_channels = channels;
@@ -218,25 +211,8 @@ std::vector<tensorflow::uint8> imageAsVector(NSURL * imageUrl, int* out_width, i
     return result;
 }
 
-NSData* loadFile(NSString * uri) {
-    NSURL *url = [NSURL URLWithString:uri];
-    if (url && url.scheme && url.host) {
-        LOG(INFO) << "Loading URL " << [uri UTF8String];
-        return [[NSData alloc] initWithContentsOfURL: url];
-    }
-
-    if ([[NSFileManager defaultManager] fileExistsAtPath:uri]) {
-        LOG(INFO) << "Loading File " << [uri UTF8String];
-        return [[NSData alloc] initWithContentsOfFile:uri];
-    }
-
-    LOG(INFO) << "Loading Resource " << [uri UTF8String];
-    NSString * path = [[NSBundle mainBundle] pathForResource:[uri stringByDeletingPathExtension] ofType:[uri pathExtension]];
-    return [NSData dataWithContentsOfFile:path];
-}
-
 NSDictionary * loadLabels(NSString * labelUri) {
-    NSData * labelData = loadFile(labelUri);
+    NSData * labelData = [NSData dataWithContentsOfURL:[URLHelper toURL:labelUri]];
     NSString * labelString = [[NSString alloc] initWithData:labelData encoding:NSUTF8StringEncoding];
     NSRegularExpression * regex = [NSRegularExpression
         regularExpressionWithPattern:@"item\\s*\\{[^}]*?name:\\s*\"?([^}]+?)\"?\\s*id:\\s*([^}]+?)\\s*display_name:\\s*\"?([^}]+?)\"?\\s*\\}"

@@ -10,9 +10,7 @@
 @implementation ImageRecognizer
 {
     TensorFlowInference * inference;
-    NSDictionary * labels;
-    NSNumber * imageMean;
-    NSNumber * imageStd;
+    NSDictionary *  labels;
 }
 
 - (id) initWithData:(NSString *)modelInput labels:(NSString *)labelsInput

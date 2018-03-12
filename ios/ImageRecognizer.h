@@ -1,7 +1,4 @@
-#include <UIKit/UIKit.h>
-
-#include "tensorflow/core/framework/op_kernel.h"
-#include "tensorflow/core/public/session.h"
+#import <Foundation/Foundation.h>
 
 @interface ImageRecognizer: NSObject
 - (id) initWithData:(NSString *)model labels:(NSString *)labels;

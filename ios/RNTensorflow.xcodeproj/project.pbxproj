@@ -11,7 +11,9 @@
 		975CD8481F79E1B6005D2BB8 /* RNTensorFlowGraph.mm in Sources */ = {isa = PBXBuildFile; fileRef = 975CD8471F79E1B6005D2BB8 /* RNTensorFlowGraph.mm */; };
 		975CD84A1F79E1C8005D2BB8 /* RNTensorFlowGraphOperations.mm in Sources */ = {isa = PBXBuildFile; fileRef = 975CD8491F79E1C8005D2BB8 /* RNTensorFlowGraphOperations.mm */; };
 		9F4BC796202C246F00725E1B /* URLHelper.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F4BC795202C246F00725E1B /* URLHelper.mm */; };
-		9F884BFD2053AAAF003F68DB /* VideoProcessor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F884BFC2053AAAF003F68DB /* VideoProcessor.mm */; };
+		9F884C4220563FDC003F68DB /* RNVideoRecognition.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F884C4020563FDB003F68DB /* RNVideoRecognition.mm */; };
+		9F884C4520563FF0003F68DB /* ImageProcessor.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F884C4320563FF0003F68DB /* ImageProcessor.mm */; };
+		9F884C7520572F12003F68DB /* VideoRecognizer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 9F884C7320572F12003F68DB /* VideoRecognizer.mm */; };
 		A727A0BB1FCB466500D3B2C5 /* TensorFlowInference.mm in Sources */ = {isa = PBXBuildFile; fileRef = A727A0BA1FCB466500D3B2C5 /* TensorFlowInference.mm */; };
 		A7F0DCB51FDCD8C200E79844 /* ImageRecognizer.mm in Sources */ = {isa = PBXBuildFile; fileRef = A7F0DCB41FDCD8C200E79844 /* ImageRecognizer.mm */; };
 		A7F0DCB81FDCD8EA00E79844 /* RNImageRecognition.mm in Sources */ = {isa = PBXBuildFile; fileRef = A7F0DCB71FDCD8EA00E79844 /* RNImageRecognition.mm */; };
@@ -39,8 +41,12 @@
 		975CD84C1F79E1E1005D2BB8 /* RNTensorFlowGraphOperations.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RNTensorFlowGraphOperations.h; sourceTree = "<group>"; };
 		9F4BC794202C246F00725E1B /* URLHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = URLHelper.h; sourceTree = "<group>"; };
 		9F4BC795202C246F00725E1B /* URLHelper.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = URLHelper.mm; sourceTree = "<group>"; };
-		9F884BFB2053AAAF003F68DB /* VideoProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoProcessor.h; sourceTree = "<group>"; };
-		9F884BFC2053AAAF003F68DB /* VideoProcessor.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = VideoProcessor.mm; sourceTree = "<group>"; };
+		9F884C4020563FDB003F68DB /* RNVideoRecognition.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = RNVideoRecognition.mm; sourceTree = "<group>"; };
+		9F884C4120563FDB003F68DB /* RNVideoRecognition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNVideoRecognition.h; sourceTree = "<group>"; };
+		9F884C4320563FF0003F68DB /* ImageProcessor.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ImageProcessor.mm; sourceTree = "<group>"; };
+		9F884C4420563FF0003F68DB /* ImageProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImageProcessor.h; sourceTree = "<group>"; };
+		9F884C7120572F12003F68DB /* VideoRecognizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = VideoRecognizer.h; sourceTree = "<group>"; };
+		9F884C7320572F12003F68DB /* VideoRecognizer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = VideoRecognizer.mm; sourceTree = "<group>"; };
 		A727A0B91FCB465600D3B2C5 /* TensorFlowInference.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TensorFlowInference.h; sourceTree = "<group>"; };
 		A727A0BA1FCB466500D3B2C5 /* TensorFlowInference.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = TensorFlowInference.mm; sourceTree = "<group>"; };
 		A7F0DCB41FDCD8C200E79844 /* ImageRecognizer.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ImageRecognizer.mm; sourceTree = "<group>"; };
@@ -71,22 +77,26 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
-				A7F0DCB91FDCD90200E79844 /* RNImageRecognition.h */,
-				A7F0DCB71FDCD8EA00E79844 /* RNImageRecognition.mm */,
 				A7F0DCB61FDCD8D700E79844 /* ImageRecognizer.h */,
 				A7F0DCB41FDCD8C200E79844 /* ImageRecognizer.mm */,
+				9F884C4420563FF0003F68DB /* ImageProcessor.h */,
+				9F884C4320563FF0003F68DB /* ImageProcessor.mm */,
 				A727A0BA1FCB466500D3B2C5 /* TensorFlowInference.mm */,
 				A727A0B91FCB465600D3B2C5 /* TensorFlowInference.h */,
+				A7F0DCB91FDCD90200E79844 /* RNImageRecognition.h */,
+				A7F0DCB71FDCD8EA00E79844 /* RNImageRecognition.mm */,
 				975CD84C1F79E1E1005D2BB8 /* RNTensorFlowGraphOperations.h */,
 				975CD84B1F79E1D7005D2BB8 /* RNTensorFlowGraph.h */,
 				975CD8491F79E1C8005D2BB8 /* RNTensorFlowGraphOperations.mm */,
 				975CD8471F79E1B6005D2BB8 /* RNTensorFlowGraph.mm */,
 				975CD8461F79E199005D2BB8 /* RNTensorFlowInference.h */,
 				975CD8441F79E183005D2BB8 /* RNTensorFlowInference.mm */,
+				9F884C4120563FDB003F68DB /* RNVideoRecognition.h */,
+				9F884C4020563FDB003F68DB /* RNVideoRecognition.mm */,
 				9F4BC794202C246F00725E1B /* URLHelper.h */,
 				9F4BC795202C246F00725E1B /* URLHelper.mm */,
-				9F884BFB2053AAAF003F68DB /* VideoProcessor.h */,
-				9F884BFC2053AAAF003F68DB /* VideoProcessor.mm */,
+				9F884C7120572F12003F68DB /* VideoRecognizer.h */,
+				9F884C7320572F12003F68DB /* VideoRecognizer.mm */,
 				134814211AA4EA7D00B7C361 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -147,13 +157,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9F884BFD2053AAAF003F68DB /* VideoProcessor.mm in Sources */,
 				975CD8481F79E1B6005D2BB8 /* RNTensorFlowGraph.mm in Sources */,
 				A7F0DCB51FDCD8C200E79844 /* ImageRecognizer.mm in Sources */,
 				975CD84A1F79E1C8005D2BB8 /* RNTensorFlowGraphOperations.mm in Sources */,
 				9F4BC796202C246F00725E1B /* URLHelper.mm in Sources */,
+				9F884C4520563FF0003F68DB /* ImageProcessor.mm in Sources */,
 				A7F0DCB81FDCD8EA00E79844 /* RNImageRecognition.mm in Sources */,
+				9F884C4220563FDC003F68DB /* RNVideoRecognition.mm in Sources */,
 				A727A0BB1FCB466500D3B2C5 /* TensorFlowInference.mm in Sources */,
+				9F884C7520572F12003F68DB /* VideoRecognizer.mm in Sources */,
 				975CD8451F79E183005D2BB8 /* RNTensorFlowInference.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

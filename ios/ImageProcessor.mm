@@ -30,6 +30,8 @@
     NSNumber * maxResultsResolved = maxResults != nil ? maxResults : [NSNumber numberWithInt:3];
     NSNumber * thresholdResolved = threshold != nil ? threshold : [NSNumber numberWithFloat:0.1];
 
+    LOG(INFO) << "Process image with orientation " << orientation;
+
     tensorflow::Tensor tensor = createImageTensor(imageRef, orientation);
     [inference feed:@"image_tensor" tensor:tensor];
 

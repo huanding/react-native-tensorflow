@@ -4,8 +4,8 @@
 
 #import <ImageIO/ImageIO.h>
 
-#include <string>
 #include <fstream>
+#include <string>
 
 @implementation ImageRecognizer
 {
@@ -26,7 +26,7 @@
     NSURL * imageUrl = [URLHelper toURL:imageUri];
 
     CGImageSourceRef source = CGImageSourceCreateWithURL((CFURLRef)imageUrl, NULL);
-    if(source==NULL) {
+    if(source == NULL) {
         throw std::invalid_argument("Failed to create image source from url");
     }
 

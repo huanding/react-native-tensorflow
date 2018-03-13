@@ -144,9 +144,9 @@ class TfVideoRecognition {
   async recognize(data) {
     await this.init
 
-    data['image'] = Image.resolveAssetSource(data['image']) != null
-      ? Image.resolveAssetSource(data['image']).uri
-      : data['image']
+    data['video'] = Image.resolveAssetSource(data['video']) != null
+      ? Image.resolveAssetSource(data['video']).uri
+      : data['video']
 
     return RNVideoRecognition.recognize(this.id, data)
   }

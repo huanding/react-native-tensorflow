@@ -42,7 +42,7 @@ RCT_EXPORT_METHOD(initVideoRecognizer:(NSString *)tId data:(NSDictionary *)data 
 RCT_EXPORT_METHOD(recognize:(NSString *)tId data:(NSDictionary *)data resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     try {
-        NSString * video = data[@"video"];
+        NSString * video = [data objectForKey:@"video"];
         NSNumber * maxResults = [data objectForKey:@"maxResults"];
         NSNumber * threshold = [data objectForKey:@"threshold"];
 

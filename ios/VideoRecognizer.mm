@@ -2,12 +2,10 @@
 #import "URLHelper.h"
 #import "ImageProcessor.h"
 
-#import <ImageIO/ImageIO.h>
 #import <AVFoundation/AVFoundation.h>
 
 #include <fstream>
 #include <string>
-#include <vector>
 
 @implementation VideoRecognizer
 {
@@ -27,7 +25,9 @@
 {
     NSURL * url = [URLHelper toURL:videoUri];
     AVURLAsset * asset = [[AVURLAsset alloc] initWithURL:url options:nil];
-    
+    if (asset == NULL) {
+        throw std::invalid_argument("Failed to load video asset from url");
+    }
     CGImagePropertyOrientation orientation = getOrientation(asset);
 
     CMTime cmTime = CMTimeMakeWithSeconds(0, 60);
@@ -41,22 +41,23 @@
                              orientation:(CGImagePropertyOrientation)orientation
                              maxResults:(NSNumber *)maxResults threshold:(NSNumber *)threshold
 {
+
     AVAssetImageGenerator * gen = [AVAssetImageGenerator assetImageGeneratorWithAsset:asset];
     gen.appliesPreferredTrackTransform = YES;
-    
+
     NSMutableArray * results = [[NSMutableArray alloc] init];
-    
+
     // TODO: generateCGImagesAsynchronously for multiple thumbnail generation
     for (NSValue * timestamp in timestamps) {
         CMTime expectedTime = [timestamp CMTimeValue];
         CMTime actualTime;
         NSError * error = nil;
         CGImageRef image = [gen copyCGImageAtTime:expectedTime actualTime:&actualTime error:&error];
-        
+
         NSArray * result = [imageProcessor recognize:image orientation:orientation maxResults:maxResults threshold:threshold];
         [results addObject:result];
     }
-    
+
     return results;
 }
 
@@ -65,7 +66,7 @@ CGImagePropertyOrientation getOrientation(AVAsset * asset)
     AVAssetTrack * videoTrack = [[asset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
     CGSize size = [videoTrack naturalSize];
     CGAffineTransform txf = [videoTrack preferredTransform];
-    
+
     if (size.width == txf.tx && size.height == txf.ty)
         return kCGImagePropertyOrientationRight;
     else if (txf.tx == 0 && txf.ty == 0)

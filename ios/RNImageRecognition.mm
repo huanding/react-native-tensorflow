@@ -42,7 +42,7 @@ RCT_EXPORT_METHOD(initImageRecognizer:(NSString *)tId data:(NSDictionary *)data 
 RCT_EXPORT_METHOD(recognize:(NSString *)tId data:(NSDictionary *)data resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     try {
-        NSString * image = data[@"image"];
+        NSString * image = [data objectForKey:@"image"];
         NSNumber * maxResults = [data objectForKey:@"maxResults"];
         NSNumber * threshold = [data objectForKey:@"threshold"];
 

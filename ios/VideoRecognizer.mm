@@ -49,14 +49,15 @@
                              orientation:(CGImagePropertyOrientation)orientation
                              maxResults:(NSNumber *)maxResults threshold:(NSNumber *)threshold
 {
-
     AVAssetImageGenerator * gen = [AVAssetImageGenerator assetImageGeneratorWithAsset:asset];
+    gen.requestedTimeToleranceAfter = kCMTimeZero;
+    gen.requestedTimeToleranceBefore = kCMTimeZero;
     gen.appliesPreferredTrackTransform = YES;
 
     NSMutableArray * results = [[NSMutableArray alloc] init];
 
     // TODO: generateCGImagesAsynchronously for multiple thumbnail generation
-    // generate every second
+    // TODO: run batch inference
     for (NSValue * timestamp in timestamps) {
         CMTime expectedTime = [timestamp CMTimeValue];
         CMTime actualTime;

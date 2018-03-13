@@ -9,6 +9,7 @@
 
 @implementation ImageProcessor
 {
+    NSString * model;
     TensorFlowInference * inference;
     NSDictionary * labels;
 }
@@ -17,11 +18,16 @@
 {
     self = [super init];
     if (self != nil) {
-        TensorFlowInference * tensorFlowInference = [[TensorFlowInference alloc] initWithModel:modelUri];
-        inference = tensorFlowInference;
+        model = modelUri;
+        inference = [[TensorFlowInference alloc] initWithModel:model];
         labels = loadLabels(labelUri);
     }
     return self;
+}
+
+- (void) reset
+{
+    inference = [[TensorFlowInference alloc] initWithModel:model];
 }
 
 - (NSArray *) recognize:(CGImageRef)imageRef orientation:(CGImagePropertyOrientation)orientation

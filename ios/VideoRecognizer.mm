@@ -2,6 +2,8 @@
 #import "URLHelper.h"
 #import "ImageProcessor.h"
 
+#include "tensorflow/core/public/session.h"
+
 #import <AVFoundation/AVFoundation.h>
 
 #include <fstream>
@@ -30,8 +32,14 @@
     }
     CGImagePropertyOrientation orientation = getOrientation(asset);
 
-    CMTime cmTime = CMTimeMakeWithSeconds(0, 60);
-    NSArray * timestamps = [NSArray arrayWithObjects: [NSValue valueWithCMTime:cmTime], nil];
+    CMTime duration = [asset duration];
+    LOG(INFO) << "duration: " << CMTimeGetSeconds(duration) << " seconds";
+
+    NSMutableArray * timestamps = [[NSMutableArray alloc] init];
+    for (int i = 0; i < CMTimeGetSeconds(duration); i++) {
+      [timestamps addObject: [NSValue valueWithCMTime:CMTimeMakeWithSeconds(i * 30, 30)]];
+    }
+
     NSArray * results = [self recognizeImage:asset timestamps:timestamps orientation:orientation
         maxResults:maxResults threshold:threshold];
     return results;
@@ -48,6 +56,7 @@
     NSMutableArray * results = [[NSMutableArray alloc] init];
 
     // TODO: generateCGImagesAsynchronously for multiple thumbnail generation
+    // generate every second
     for (NSValue * timestamp in timestamps) {
         CMTime expectedTime = [timestamp CMTimeValue];
         CMTime actualTime;
@@ -56,6 +65,7 @@
 
         NSArray * result = [imageProcessor recognize:image orientation:orientation maxResults:maxResults threshold:threshold];
         [results addObject:result];
+        [imageProcessor reset];
     }
 
     return results;

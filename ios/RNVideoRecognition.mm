@@ -24,7 +24,7 @@
 
 RCT_EXPORT_MODULE()
 
-RCT_EXPORT_METHOD(initImageRecognizer:(NSString *)tId data:(NSDictionary *)data resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+RCT_EXPORT_METHOD(initVideoRecognizer:(NSString *)tId data:(NSDictionary *)data resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {
     try {
         NSString * model = data[@"model"];

@@ -41,7 +41,6 @@
         }
         CFRelease(dict);
     }
-    CFRelease(source);
 
     CGImageRef image = CGImageSourceCreateImageAtIndex(source, 0, NULL);
     if(image==NULL) {
@@ -51,6 +50,8 @@
     NSArray * result = [imageProcessor recognize:image orientation:orientation maxResults:maxResults threshold:threshold];
 
     CGImageRelease(image);
+    CFRelease(source);
+
     return result;
 }
 

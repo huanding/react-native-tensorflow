@@ -2,7 +2,7 @@
 import { NativeModules, Image } from 'react-native';
 import uuid from 'uuid/v1';
 
-const { RNImageRecognition, RNTensorFlowInference, RNTensorFlowGraph, RNTensorFlowGraphOperations } = NativeModules;
+const { RNImageRecognition, RNVideoRecognition, RNTensorFlowInference, RNTensorFlowGraph, RNTensorFlowGraphOperations } = NativeModules;
 
 class TensorFlowOperation {
   constructor(id, opName) {
@@ -127,4 +127,29 @@ class TfImageRecognition {
   }
 }
 
-export { TensorFlow, TfImageRecognition }
+class TfVideoRecognition {
+  constructor(data) {
+    this.id = uuid()
+    data['model'] = Image.resolveAssetSource(data['model']) != null
+      ? Image.resolveAssetSource(data['model']).uri
+      : data['model']
+
+    data['labels'] = Image.resolveAssetSource(data['labels']) != null
+      ? Image.resolveAssetSource(data['labels']).uri
+      : data['labels']
+
+    this.init = RNVideoRecognition.initVideoRecognizer(this.id, data)
+  }
+
+  async recognize(data) {
+    await this.init
+
+    data['image'] = Image.resolveAssetSource(data['image']) != null
+      ? Image.resolveAssetSource(data['image']).uri
+      : data['image']
+
+    return RNVideoRecognition.recognize(this.id, data)
+  }
+}
+
+export { TensorFlow, TfImageRecognition, TfVideoRecognition }

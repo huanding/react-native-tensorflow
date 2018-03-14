@@ -31,13 +31,12 @@
         throw std::invalid_argument("Failed to load video asset from url");
     }
     CGImagePropertyOrientation orientation = getOrientation(asset);
-
     CMTime duration = [asset duration];
-    LOG(INFO) << "duration: " << CMTimeGetSeconds(duration) << " seconds";
+    LOG(INFO) << "orientation: " << orientation << " duration: " << CMTimeGetSeconds(duration) << " seconds";
 
     NSMutableArray * timestamps = [[NSMutableArray alloc] init];
     for (int i = 0; i < CMTimeGetSeconds(duration); i++) {
-      [timestamps addObject: [NSValue valueWithCMTime:CMTimeMakeWithSeconds(i * 30, 30)]];
+      [timestamps addObject: [NSValue valueWithCMTime:CMTimeMakeWithSeconds(i, 30)]];
     }
 
     NSArray * results = [self recognizeImage:asset timestamps:timestamps orientation:orientation
@@ -60,10 +59,11 @@
     // TODO: run batch inference
     for (NSValue * timestamp in timestamps) {
         CMTime expectedTime = [timestamp CMTimeValue];
+        LOG(INFO) << "Inferring image at " << CMTimeGetSeconds(expectedTime) << " seconds";
         CMTime actualTime;
         NSError * error = nil;
         CGImageRef image = [gen copyCGImageAtTime:expectedTime actualTime:&actualTime error:&error];
-
+        LOG(INFO) << "Inferred image at " << CMTimeGetSeconds(actualTime) << " seconds";
         NSArray * result = [imageProcessor recognize:image orientation:orientation maxResults:maxResults threshold:threshold];
         [results addObject:result];
         [imageProcessor reset];
@@ -75,17 +75,24 @@
 CGImagePropertyOrientation getOrientation(AVAsset * asset)
 {
     AVAssetTrack * videoTrack = [[asset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0];
-    CGSize size = [videoTrack naturalSize];
     CGAffineTransform txf = [videoTrack preferredTransform];
+    CGFloat videoAngleInDegree  = atan2(txf.b, txf.a) * 180 / M_PI;
 
-    if (size.width == txf.tx && size.height == txf.ty)
-        return kCGImagePropertyOrientationRight;
-    else if (txf.tx == 0 && txf.ty == 0)
-        return kCGImagePropertyOrientationLeft;
-    else if (txf.tx == 0 && txf.ty == size.width)
-        return kCGImagePropertyOrientationDown;
-    else
-        return kCGImagePropertyOrientationUp;
+    LOG(INFO) << "Transform degree:" << videoAngleInDegree;
+
+    switch ((int)videoAngleInDegree) {
+        case 0:
+            return kCGImagePropertyOrientationRight;
+        case 90:
+            return kCGImagePropertyOrientationUp;
+        case 180:
+            return kCGImagePropertyOrientationLeft;
+        case -90:
+            return kCGImagePropertyOrientationDown;
+            break;
+        default:
+            throw std::invalid_argument("Invalid image orientation angle");
+    }
 }
 
 @end

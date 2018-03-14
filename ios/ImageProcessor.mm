@@ -91,6 +91,8 @@ tensorflow::Tensor createImageTensor(CGImageRef imageRef, CGImagePropertyOrienta
     int image_channels;
     std::vector<tensorflow::uint8> image_data = imageAsVector(imageRef, orientation, &image_width, &image_height, &image_channels);
 
+    LOG(INFO) << "Processing image width:" << image_width << " height: " << image_height << " channels: " << image_channels;
+
     const int wanted_channels = 3;
     tensorflow::Tensor image_tensor(tensorflow::DT_UINT8, tensorflow::TensorShape({1, image_height, image_width, wanted_channels}));
     auto image_tensor_mapped = image_tensor.tensor<unsigned char, 4>();
